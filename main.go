@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"testing"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -23,4 +25,9 @@ func main() {
 	})
 
 	r.Run(":8081")
+}
+
+// Intentionally failing test for CI
+func TestFail(t *testing.T) {
+	t.Fatal("Intentional failure for CI workflow")
 }
