@@ -7,8 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func main() {
-	fmt.Println("Hello World")
+// setupRouter configures and returns a Gin router
+func setupRouter() *gin.Engine {
 	r := gin.Default()
 
 	r.GET("/ping", func(c *gin.Context) {
@@ -22,5 +22,12 @@ func main() {
 		})
 	})
 
+	return r
+}
+
+func main() {
+	fmt.Println("Starting microservice...")
+	r := setupRouter()
+	fmt.Println("Server running on :8081")
 	r.Run(":8081")
 }

@@ -1,6 +1,12 @@
 name: Go CI
 
 on:
+  workflow_dispatch:
+    inputs:
+      image_name:
+        description: 'Docker image name (e.g. whitehat1860/cnadevops-practical4)'
+        required: true
+        default: 'whitehat1860/cnadevops-practical4'
   push:
     branches: [ main ]
   pull_request:
@@ -34,15 +40,34 @@ jobs:
           exit 1
         fi
 
-    - name: Log in to GitHub Container Registry
+    - name: Log in to Docker Hub
       uses: docker/login-action@v3
       with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        registry: docker.io
+        username: whitehat1860
+        password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
     - name: Build Docker image
-      run: docker build -t ghcr.io/${{ github.repository }}:latest .
+      run: |
+        if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          IMAGE_NAME="${{ github.event.inputs.image_name }}"
+        else
+          IMAGE_NAME="whitehat1860/cnadevops-practical4"
+        fi
+        docker build -t $IMAGE_NAME:latest -t $IMAGE_NAME:${{ github.sha }} .
 
     - name: Push Docker image
-      run: docker push ghcr.io/${{ github.repository }}:latest
+      run: |
+        if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          IMAGE_NAME="${{ github.event.inputs.image_name }}"
+        else
+          IMAGE_NAME="whitehat1860/cnadevops-practical4"
+        fi
+        docker push $IMAGE_NAME:latest
+        docker push $IMAGE_NAME:${{ github.sha }}
+        
+    - name: Deployment Status
+      run: |
+        echo "✅ Microservice successfully built and deployed!"
+        echo "Image: $(if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then echo "${{ github.event.inputs.image_name }}"; else echo "whitehat1860/cnadevops-practical4"; fi):latest"
+        echo "Commit: ${{ github.sha }}"
